@@ -22,7 +22,7 @@ Image steganography has advanced significantly with the integration of deep lear
     ```bash
     python train.py --train_data="PATH_TO_TRAIN_FOLDER" --val_data="PATH_TO_VAL_FOLDER"
     ```
-    Additional Parrameters:
+4. Additional Parrameters:
 
     "--epochs"          default=80      
     "--data_depth"      default=6       
