@@ -66,40 +66,12 @@ class Trainer(object):
 
     # ============================================== Lifecycle =======================================
 
-    def __init__(
-        self,
-        opt,
-        data_depth,
-        coder,
-        critic,
-        log_dir,
-        writer_dir,
-        net_dir,
-        sample_dir,
-        attack,
-        target_mse,
-        resolution,
-        encoder_blocks,
-        decoder_blocks,
-        base_channels,
-        inverse_bottleneck,
-        dropout,
-    ):
+    def __init__(self, opt, data_depth, coder, critic, log_dir, writer_dir, net_dir, sample_dir, attack, target_mse,
+                 resolution, encoder_blocks, decoder_blocks, base_channels, inverse_bottleneck, dropout):
 
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.model = MainGan(
-            opt,
-            data_depth,
-            coder,
-            critic,
-            self.device,
-            resolution,
-            encoder_blocks,
-            decoder_blocks,
-            base_channels,
-            inverse_bottleneck,
-            dropout,
-        )
+        self.model = MainGan(opt, data_depth, coder, critic, self.device, resolution, encoder_blocks, decoder_blocks,
+                             base_channels, inverse_bottleneck, dropout)
         self.data_depth = data_depth
         self.metric_history = []
         self.encoder_mse_history = []
@@ -493,9 +465,9 @@ class Trainer(object):
                     cover_path = os.path.join(samples_path, f"{im_idx}.cover.png")
                     if not isfile(cover_path):
                         cover_img = (
-                            (cover[i].permute(1, 2, 0).detach().cpu().numpy() + 1.0)
-                            / 2.0
-                            * 255.0
+                                (cover[i].permute(1, 2, 0).detach().cpu().numpy() + 1.0)
+                                / 2.0
+                                * 255.0
                         )
                         imageio.imwrite(cover_path, cover_img.astype("uint8"))
 
@@ -509,7 +481,7 @@ class Trainer(object):
     # ============================================== Optimiser =======================================
 
     def _get_optimizers(
-        self, lr, weight_decay, start_epoch, total_epochs, iters_per_epoch
+            self, lr, weight_decay, start_epoch, total_epochs, iters_per_epoch
     ):
         critic_optimizer, critic_scheduler = self._create_optimizer(
             self.model.critic_params(),
@@ -533,7 +505,7 @@ class Trainer(object):
 
     @staticmethod
     def _create_optimizer(
-        parameters, lr, weight_decay, start_epoch, total_epochs, iters_per_epoch
+            parameters, lr, weight_decay, start_epoch, total_epochs, iters_per_epoch
     ):
         # if total_iterations > 0 and warmup_iterations > 0:
         #     optimizer = SGD(parameters, lr=lr, weight_decay=weight_decay, momentum=0.9, nesterov=True)

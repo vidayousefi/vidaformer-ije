@@ -3,12 +3,13 @@ import torch.nn.functional as F
 from torch import nn
 
 from vformer.models.coders.dense_coder import _conv2d
+from vformer.models.coders.mobilevit import Transformer, MobileViTBlock
 from vformer.models.coders.sade import SwinTransBlock
 
 
 class UnetConvBlock(nn.Module):
     def __init__(
-        self, opt, in_channels, channels, device, inverse_bottleneck, dropout: float
+            self, opt, in_channels, channels, device, inverse_bottleneck, dropout: float
     ):
         super().__init__()
         self.projection = None
@@ -81,16 +82,16 @@ class UnetConvBlock(nn.Module):
 
 class HybridUnet(nn.Module):
     def __init__(
-        self,
-        opt,
-        is_encoder,
-        data_depth,
-        encoder_blocks,
-        decoder_blocks,
-        base_channels,
-        device,
-        inverse_bottleneck,
-        dropout,
+            self,
+            opt,
+            is_encoder,
+            data_depth,
+            encoder_blocks,
+            decoder_blocks,
+            base_channels,
+            device,
+            inverse_bottleneck,
+            dropout,
     ):
         super().__init__()
         self.is_encoder = is_encoder
@@ -111,24 +112,22 @@ class HybridUnet(nn.Module):
         for s in self.encoder_blocks:
             stage_blocks = []
             curr_ch = (
-                self.base_channels * (2**stage_idx)
+                self.base_channels * (2 ** stage_idx)
                 if stage_idx < len(self.encoder_blocks) - 1
                 else curr_ch
             )
-            for b in range(s):
-                if stage_idx < len(self.encoder_blocks) - 1 or not opt.transformer:
-                    stage_blocks.append(
-                        UnetConvBlock(
-                            opt, inp_ch, curr_ch, device, inverse_bottleneck, dropout
-                        )
-                    )
-                    inp_ch = curr_ch
-                else:
-                    stage_blocks.append(
-                        SwinTransBlock(
-                            opt, inp_ch, block_depth=1, patch_size=2, dropout=dropout
-                        )
-                    )
+
+            is_last_block = stage_idx == len(self.encoder_blocks) - 1
+            if opt.mobile and opt.transformer and is_last_block:
+                stage_blocks.append(MobileViTBlock(curr_ch * 2, 3, curr_ch, 3, (2, 2), curr_ch * 4, dropout))
+                # stage_blocks.append(_conv2d(curr_ch, curr_ch, 1))
+            else:
+                for b in range(s):
+                    if not is_last_block or not opt.transformer:
+                        stage_blocks.append(UnetConvBlock(opt, inp_ch, curr_ch, device, inverse_bottleneck, dropout))
+                        inp_ch = curr_ch
+                    else:
+                        stage_blocks.append(SwinTransBlock(opt, inp_ch, block_depth=1, patch_size=2, dropout=dropout))
             shortcuts.append(curr_ch)
             self.encoder_layers.append(nn.Sequential(*stage_blocks))
             stage_idx += 1
@@ -136,21 +135,13 @@ class HybridUnet(nn.Module):
 
         for s in self.decoder_blocks:
             stage_blocks = []
-            curr_ch = self.base_channels * (2**stage_idx)
+            curr_ch = self.base_channels * (2 ** stage_idx)
             stage_blocks.append(
                 _conv2d(shortcuts[stage_idx] + shortcuts[stage_idx + 1], curr_ch, 1)
             )
             for b in range(s):
                 stage_blocks.append(
-                    UnetConvBlock(
-                        opt,
-                        curr_ch,
-                        curr_ch,
-                        device,
-                        inverse_bottleneck,
-                        dropout if b < s - 1 else 0,
-                    )
-                )
+                    UnetConvBlock(opt, curr_ch, curr_ch, device, inverse_bottleneck, dropout if b < s - 1 else 0))
             self.decoder_layers.append(nn.Sequential(*stage_blocks))
             stage_idx -= 1
 

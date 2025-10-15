@@ -34,22 +34,19 @@ def parse_args():
     parser.add_argument("--resolution", default=256, type=int)
     parser.add_argument("--train_data", default="D:/Datasets/div2k/train/_", type=str)
     parser.add_argument("--val_data", default="D:/Datasets/div2k/val/_", type=str)
-    parser.add_argument(
-        "--augmentation", default=False, action=argparse.BooleanOptionalAction
-    )
+    parser.add_argument("--augmentation", default=False, action=argparse.BooleanOptionalAction)
     parser.add_argument("--lr", default=1e-4, type=float)
     parser.add_argument("--decay", default=5e-6, type=float)
     parser.add_argument("--dropout", default=0.03, type=float)
     parser.add_argument("--mse", default=1e-3, type=float)
-    parser.add_argument(
-        "--validation", default=False, action=argparse.BooleanOptionalAction
-    )
+    parser.add_argument("--validation", default=False, action=argparse.BooleanOptionalAction)
     parser.add_argument("--jpeg", default=False, action=argparse.BooleanOptionalAction)
     parser.add_argument("--noise", default=0, type=float)
     parser.add_argument("--crop", default=0, type=int)
     parser.add_argument("--time", default=False, action=argparse.BooleanOptionalAction)
     parser.add_argument("--coordconv", default=True, type=bool)
     parser.add_argument("--transformer", default=True, type=bool)
+    parser.add_argument("--mobile", default=False, type=bool)
     parser.add_argument("--encoder_blocks", default=[3, 6, 3], type=list[int])
     parser.add_argument("--decoder_blocks", default=[6, 3], type=list[int])
     parser.add_argument("--base_channels", default=48, type=int)
@@ -80,7 +77,7 @@ def main():
     os.makedirs(sample_dir)
 
     Augmentation.calc_transform(opt.augmentation, opt.resolution)
-    train, validation = prepare_data(opt.train_data, opt.val_dir)
+    train, validation = prepare_data(opt.train_data, opt.val_data)
 
     attack = Attacks(opt.noise, opt.crop, opt.jpeg)
 
