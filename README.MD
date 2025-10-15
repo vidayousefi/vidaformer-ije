@@ -22,7 +22,8 @@ Image steganography has advanced significantly with the integration of deep lear
     ```bash
     python train.py --train_data="PATH_TO_TRAIN_FOLDER" --val_data="PATH_TO_VAL_FOLDER"
     ```
-    Additional Parrameters:
+4. Additional Parameters:
+
     "--epochs"          default=80      
     "--data_depth"      default=6       
     "--resolution"      default=256     
@@ -34,6 +35,12 @@ Image steganography has advanced significantly with the integration of deep lear
     "--transformer"     default=True
     "--base_channels"   default=48
 
+5. Introspection with tensorboard:
+    You can access the training process and the results using tensorboard:
+    ```bash
+    tensorboard --logdir ABSOLUTE_PATH_TO_RESULTS_FOLDER
+    ```
+    
 
 ## License
 This project is licensed under the [MIT License].
